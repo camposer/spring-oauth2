@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:oauth="http://www.springframework.org/schema/security/oauth2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+	<http pattern="/oauth/token" create-session="stateless"
+		authentication-manager-ref="clientAuthenticationManager"
+		xmlns="http://www.springframework.org/schema/security">
+		<anonymous enabled="false" />
+		<http-basic entry-point-ref="clientAuthenticationEntryPoint" />
+		<access-denied-handler ref="oauthAccessDeniedHandler" />
+	</http>
+	
+	 <beans:bean id="clientAuthenticationEntryPoint"
+		class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
+		<beans:property name="typeName" value="Basic"/>
+	</beans:bean>	
+	
+	<beans:bean id="oauthAccessDeniedHandler"
+		class="org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler"/>
+	
+	<!-- <authentication-manager alias="authenticationManager"> <authentication-provider> 
+		<user-service> <user authorities="ROLE_ADMIN" name="admin" password="admin" 
+		/> </user-service> </authentication-provider> </authentication-manager> -->
+
+    <beans:bean id="clientCredentialsTokenEndpointFilter"  
+          class="org.springframework.security.oauth2.provider.client.ClientCredentialsTokenEndpointFilter">  
+        <beans:property name="authenticationManager" ref="clientAuthenticationManager"/>  
+    </beans:bean>  
+      
+    <authentication-manager id="clientAuthenticationManager" xmlns="http://www.springframework.org/schema/security">  
+        <authentication-provider user-service-ref="client-details-user-service"/>  
+    </authentication-manager>
+
+	<authentication-manager alias="userAuthenticationManager">
+		<authentication-provider>
+			<user-service>
+				<user authorities="ROLE_ADMIN" name="admin" password="admin" />
+			</user-service>
+		</authentication-provider>
+	</authentication-manager>
+	
+	<beans:bean id="passwordEncoder" class="org.springframework.security.crypto.password.StandardPasswordEncoder"/>  
+      
+    <beans:bean id="userService" class="org.civitana.oauth.UserServiceImpl"/>
+    
+    <authentication-manager alias="userAuthenticationManager">  
+        <authentication-provider user-service-ref="userService">  
+            <password-encoder ref="passwordEncoder"/>  
+        </authentication-provider>  
+    </authentication-manager>        
+      
+    <beans:bean id="client-details-user-service" class="org.springframework.security.oauth2.provider.client.ClientDetailsUserDetailsService">  
+        <beans:constructor-arg ref="client-details-service" />  
+    </beans:bean>  
+    	
+	<beans:bean id="tokenStore"
+		class="org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore" />
+
+	<beans:bean id="tokenServices"
+		class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
+		<beans:property name="tokenStore" ref="tokenStore" />
+		<beans:property name="supportRefreshToken" value="true" />
+		<beans:property name="clientDetailsService" ref="client-details-service" />
+	</beans:bean>
+
+    <oauth:client-details-service id="client-details-service">  
+      
+            <!-- Allow access to test clients -->  
+            <oauth:client  
+                    client-id="353b302c44574f565045687e534e7d6a"  
+                    secret="286924697e615a672a646a493545646c"  
+                    authorized-grant-types="password,refresh_token"  
+                    authorities="ROLE_ADMIN"  
+                    access-token-validity="60"  
+                    refresh-token-validity="60"  
+                    />  
+      
+            <!-- Web Application clients -->  
+            <oauth:client  
+                    client-id="7b5a38705d7b3562655925406a652e32"  
+                    secret="655f523128212d6e70634446224c2a48"  
+                    authorized-grant-types="password,refresh_token"  
+                    authorities="ROLE_ADMIN"  
+                    access-token-validity="60"  
+                    refresh-token-validity="60"  
+                    />  
+      
+            <!-- iOS clients -->  
+            <oauth:client  
+                    client-id="5e572e694e4d61763b567059273a4d3d"  
+                    secret="316457735c4055642744596b302e2151"  
+                    authorized-grant-types="password,refresh_token"  
+                    authorities="ROLE_ADMIN"  
+                    access-token-validity="60"  
+                    refresh-token-validity="60"  
+                    />  
+      
+            <!-- Android clients -->  
+            <oauth:client  
+                    client-id="302a7d556175264c7e5b326827497349"  
+                    secret="4770414c283a20347c7b553650425773"  
+                    authorized-grant-types="password,refresh_token"  
+                    authorities="ROLE_ADMIN"  
+                    access-token-validity="60"  
+                    refresh-token-validity="60"  
+                    />  
+      
+    </oauth:client-details-service>  
+    
+	<oauth:authorization-server
+		client-details-service-ref="client-details-service"
+		token-services-ref="tokenServices">
+		<oauth:refresh-token />
+		<oauth:password />
+	</oauth:authorization-server>
+
+
+    <oauth:resource-server id="resourceServerFilter" token-services-ref="tokenServices"/>
+    
+    <global-method-security jsr250-annotations="enabled" access-decision-manager-ref="accessDecisionManager"/>
+    
+	<beans:bean id="accessDecisionManager" class="org.springframework.security.access.vote.UnanimousBased">
+		<beans:property name="decisionVoters">
+			<beans:list>
+				<beans:bean class="org.springframework.security.access.annotation.Jsr250Voter" />
+			</beans:list>
+		</beans:property>
+	</beans:bean>     
+      
+	<!-- <context:annotation-config/> <context:component-scan base-package="org.civitana.config.sec"/> -->
+</beans:beans>
