@@ -57,6 +57,7 @@
 	<beans:bean id="userService" class="org.civitana.oauth.UserServiceImpl"/>
 	<authentication-manager alias="userAuthenticationManager">
 		<authentication-provider user-service-ref="userService">
+			<!-- Already using userService -->
 			<!-- 
 			<user-service>
 				<user authorities="ROLE_ADMIN" name="admin" password="admin" />
@@ -83,7 +84,7 @@
             <oauth:client   
 				client-id="353b302c44574f565045687e534e7d6a"  
 				secret="286924697e615a672a646a493545646c"  
-				authorized-grant-types="password,refresh_token"
+				authorized-grant-types="password,refresh_token,client_credentials"
 				scope="read"  
 				authorities="ROLE_ADMIN"  
 				access-token-validity="60"  
@@ -94,6 +95,7 @@
 		client-details-service-ref="client-details-service"
 		token-services-ref="tokenServices">
 		<oauth:refresh-token />
+		<oauth:client-credentials/>
 		<oauth:password />
 	</oauth:authorization-server>
 
