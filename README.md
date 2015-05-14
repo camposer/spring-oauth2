@@ -13,6 +13,7 @@ $ curl -v -X POST -H "Authorization: Basic MzUzYjMwMmM0NDU3NGY1NjUwNDU2ODdlNTM0Z
 ## Accediendo al recurso securizado
 
 $ TOKEN=(Valor devuelto por la llamada cURL anterior)
+
 $ curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/civitana-oauth/sec/hello
 
 Nota: El "token" basic es el resultado del base64 de client-id:secret
